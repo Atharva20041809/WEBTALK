@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from '../services/api.js';
 
 function Register() {
@@ -14,7 +14,7 @@ function Register() {
       const response = await signupUser({ username, email, password });
       console.log('Signup response:', response.data);
       alert('Signup successful!');
-      navigate('/home'); // or '/home'
+      navigate('/home'); // redirect after signup
     } catch (err) {
       if (err.response) {
         console.error('Backend responded with error:', err.response.data);
@@ -51,8 +51,13 @@ function Register() {
           onChange={e => setPassword(e.target.value)}
           required
         />
-        <button type="submit" >Signup</button>
+        <button type="submit">Signup</button>
       </form>
+
+      {/* Add this below the form */}
+      <p style={{ marginTop: "10px" }}>
+        Already have an account? <Link to="/login">Login here</Link>
+      </p>
     </div>
   );
 }

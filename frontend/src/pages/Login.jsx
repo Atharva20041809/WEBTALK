@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../services/api.js";
 
 export default function Login() {
@@ -11,6 +11,10 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await loginUser({ email, password });
+
+      // Store JWT token if you want to access protected routes
+      localStorage.setItem("token", response.data.token);
+
       alert("Login successful!");
       navigate("/home"); // redirect to home page
     } catch (err) {
@@ -42,6 +46,11 @@ export default function Login() {
         />
         <button type="submit">Login</button>
       </form>
+
+      {/* Add this below the form */}
+      <p style={{ marginTop: "10px" }}>
+        Don't have an account? <Link to="/register">Signup here</Link>
+      </p>
     </div>
   );
 }
