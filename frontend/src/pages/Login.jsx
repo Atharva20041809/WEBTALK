@@ -49,7 +49,7 @@ export default function Login() {
 
       {/* Add this below the form */}
       <p style={{ marginTop: "10px" }}>
-        Don't have an account? <Link to="/register">Signup here</Link>
+        Don't have an account? <Link to="/">Signup here</Link>
       </p>
     </div>
   );
