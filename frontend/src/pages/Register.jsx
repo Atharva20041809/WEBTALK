@@ -13,8 +13,14 @@ function Register() {
     try {
       const response = await signupUser({ username, email, password });
       console.log('Signup response:', response.data);
+
+      // Optional: save token if returned by backend
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+
       alert('Signup successful!');
-      navigate('/home'); // redirect after signup
+      navigate('/home');
     } catch (err) {
       if (err.response) {
         console.error('Backend responded with error:', err.response.data);
@@ -54,7 +60,6 @@ function Register() {
         <button type="submit">Signup</button>
       </form>
 
-      {/* Add this below the form */}
       <p style={{ marginTop: "10px" }}>
         Already have an account? <Link to="/login">Login here</Link>
       </p>

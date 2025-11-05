@@ -11,12 +11,15 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await loginUser({ email, password });
+      console.log("Login response:", response.data);
 
-      // Store JWT token if you want to access protected routes
-      localStorage.setItem("token", response.data.token);
+      // Save token if backend returns one
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
 
       alert("Login successful!");
-      navigate("/home"); // redirect to home page
+      navigate("/home");
     } catch (err) {
       console.error(err.response?.data || err);
       alert("Login failed. Please check your credentials.");
@@ -47,7 +50,6 @@ export default function Login() {
         <button type="submit">Login</button>
       </form>
 
-      {/* Add this below the form */}
       <p style={{ marginTop: "10px" }}>
         Don't have an account? <Link to="/">Signup here</Link>
       </p>
