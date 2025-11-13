@@ -8,13 +8,7 @@ const { PrismaClient } = require('@prisma/client');
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors({
-    origin: ["https://webtalk-git-main-atharva-tiwaris-projects.vercel.app","webtalk-rho.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
-}));
-app.options("*", cors());
+app.use(cors());
 
 
 app.use(express.json());
@@ -29,7 +23,7 @@ function verifyToken(req, res, next) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         return res.status(401).json({ error: "Invalid token" });
-    }
+        }
       req.user = decoded;
       next();
     });
@@ -38,7 +32,7 @@ function verifyToken(req, res, next) {
 app.get("/", (req, res) => {
     res.send("✅ WebTalk Backend is Running!");
 });
-  
+
 
 
 app.post('/signup',async (req,res)=>{
