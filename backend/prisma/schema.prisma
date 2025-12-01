@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
+  username      String        @unique
   email         String        @unique
   password      String
   pic           String        @default("https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg")
