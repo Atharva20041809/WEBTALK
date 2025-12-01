@@ -16,36 +16,43 @@ app.get("/", (req, res) => {
     res.send("WebTalk Backend is Running!");
 });
 
-app.post('/signup', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
+app.post("/signup", async (req, res) => {
+  try {
+    const { username, email, password, pic } = req.body;
 
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: 'All input fields are required' });
-        }
-
-        const existingEmail = await prisma.user.findUnique({ where: { email } });
-        if (existingEmail) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
-
-        const existingUser = await prisma.user.findUnique({ where: { username } });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await prisma.user.create({
-            data: { username, email, password: hashedPassword }
-        });
-
-        res.status(201).json({ message: 'Signup Successful', userId: user.id });
-
-    } catch (err) {
-        return res.status(500).json({ message: err.message });
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "All input fields are required" });
     }
+
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { username } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        pic:
+          pic ||
+          "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+      },
+    });
+
+    res.status(201).json({ message: "Signup Successful", userId: user.id });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
 });
+
 
 app.post('/login', async (req, res) => {
     try {
