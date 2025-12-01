@@ -7,6 +7,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -17,7 +19,7 @@ export default function Login() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-
+      
       alert("Login successful!");
       navigate("/home");
     } catch (err) {

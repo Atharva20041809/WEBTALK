@@ -6,15 +6,15 @@ function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pic, setPic] = useState(''); // added pic state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await signupUser({ username, email, password });
+      const response = await signupUser({ username, email, password, pic }); // included pic
       console.log('Signup response:', response.data);
 
-      // Optional: save token if returned by backend
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
@@ -56,6 +56,11 @@ function Register() {
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
+        />
+        <input
+          placeholder="Profile Picture URL"
+          value={pic}
+          onChange={e => setPic(e.target.value)}
         />
         <button type="submit">Signup</button>
       </form>

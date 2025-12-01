@@ -8,9 +8,66 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  username  String   @unique
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String        @unique
+  password      String
+  pic           String        @default("https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg")
+  isAdmin       Boolean       @default(false)
+
+  messagesSent  Message[]     @relation("MessageSender")
+  chats         ChatUser[]
+  messagesRead  MessageRead[]
+  adminOf       Chat[]        @relation("GroupAdmin")
+}
+
+model Chat {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  chatName      String?
+  isGroupChat   Boolean      @default(false)
+
+  users         ChatUser[]
+  groupAdmin    User?        @relation("GroupAdmin", fields: [groupAdminId], references: [id])
+  groupAdminId  String?      @db.ObjectId
+
+  messages      Message[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Message {
+  id         String        @id @default(auto()) @map("_id") @db.ObjectId
+  content    String?
+
+  sender     User          @relation("MessageSender", fields: [senderId], references: [id])
+  senderId   String        @db.ObjectId
+
+  chat       Chat          @relation(fields: [chatId], references: [id])
+  chatId     String        @db.ObjectId
+
+  readBy     MessageRead[]
+
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model ChatUser {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String   @db.ObjectId
+
+  chat    Chat     @relation(fields: [chatId], references: [id])
+  chatId  String   @db.ObjectId
+}
+
+model MessageRead {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String   @db.ObjectId
+
+  message    Message  @relation(fields: [messageId], references: [id])
+  messageId  String   @db.ObjectId
 }
