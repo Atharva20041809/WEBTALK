@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import axios from "axios";
 
-const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, children }) => {
+const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, children, socket }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [groupChatName, setGroupChatName] = useState("");
     const [search, setSearch] = useState("");
@@ -124,6 +124,10 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, childr
                 },
                 config
             );
+
+            if (socket) {
+                socket.emit("kick user", { chatId: selectedChat.id, userId: user1.id });
+            }
 
             user1.id === user.id ? setSelectedChat() : setSelectedChat(data);
             setFetchAgain(!fetchAgain);

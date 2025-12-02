@@ -118,6 +118,25 @@ io.on("connection", (socket) => {
     });
   });
 
+  // Handle user removal from group
+  socket.on("kick user", ({ chatId, userId }) => {
+    // 1. Notify the user they were removed
+    io.to(userId).emit("removed from group", chatId);
+
+    // 2. Make the user leave the socket room
+    // We need to find the socket ID for this userId.
+    const socketId = onlineUsers.get(userId);
+    if (socketId) {
+        const targetSocket = io.sockets.sockets.get(socketId);
+        if (targetSocket) {
+            targetSocket.leave(chatId);
+        }
+    }
+
+    // 3. Notify the group (so they can update member list)
+    socket.in(chatId).emit("user removed", { chatId, userId });
+  });
+
   // Handle disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected - Socket ID:", socket.id);

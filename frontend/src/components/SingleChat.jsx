@@ -19,7 +19,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [isTyping, setIsTyping] = useState(false);
     const selectedChatCompare = useRef();
 
-    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
+    const { user, selectedChat, setSelectedChat, notification, setNotification, chats, setChats } = ChatState();
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
@@ -155,6 +155,34 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         };
     }, [notification, fetchAgain]);
 
+    // Handle removal events
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleRemovedFromGroup = (chatId) => {
+            if (selectedChat && selectedChat.id === chatId) {
+                setSelectedChat(null);
+            }
+            setChats(chats.filter((c) => c.id !== chatId));
+        };
+
+        const handleUserRemoved = ({ chatId, userId }) => {
+            if (selectedChat && selectedChat.id === chatId) {
+                const updatedUsers = selectedChat.users.filter((u) => u.user.id !== userId);
+                setSelectedChat({ ...selectedChat, users: updatedUsers });
+                setFetchAgain(!fetchAgain);
+            }
+        };
+
+        socket.on("removed from group", handleRemovedFromGroup);
+        socket.on("user removed", handleUserRemoved);
+
+        return () => {
+            socket.off("removed from group", handleRemovedFromGroup);
+            socket.off("user removed", handleUserRemoved);
+        };
+    }, [socketConnected, selectedChat, chats, fetchAgain]);
+
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
 
@@ -200,6 +228,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                     fetchMessages={fetchMessages}
                                     fetchAgain={fetchAgain}
                                     setFetchAgain={setFetchAgain}
+                                    socket={socket}
                                 >
                                     <button className="btn btn-secondary">Update Group</button>
                                 </UpdateGroupChatModal>
