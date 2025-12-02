@@ -303,6 +303,15 @@ const addToGroup = async (req, res) => {
     res.status(404);
     throw new Error("Chat Not Found");
   } else {
+    // Emit socket event to notify all group members about new member
+    const io = req.app.locals.io;
+    if (io) {
+      io.to(chatId).emit("groupMemberAdded", {
+        chatId: chatId,
+        chat: added,
+      });
+    }
+    
     res.json(added);
   }
 };
