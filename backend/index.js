@@ -10,8 +10,26 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware'); // I
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+
+// CORS configuration
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://webtalk-rho.vercel.app'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('Not allowed by CORS'), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true
+}));
 app.use(express.json());
+
 
 app.get("/", (req, res) => {
     res.send("WebTalk Backend is Running!");
@@ -33,7 +51,7 @@ const server = app.listen(PORT, () => console.log(`Server running on PORT ${PORT
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: ["http://localhost:5173", "https://vercel.app"], // Allow both local and production
+    origin: ["http://localhost:5173", "https://webtalk-rho.vercel.app"], // Allow both local and production
     credentials: true,
   },
 });

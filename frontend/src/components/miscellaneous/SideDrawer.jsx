@@ -34,7 +34,7 @@ const SideDrawer = () => {
             };
 
             const { data } = await axios.get(
-                `http://localhost:3000/api/user?search=${search}`,
+                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/user?search=${search}`,
                 config
             );
 
@@ -56,7 +56,7 @@ const SideDrawer = () => {
                 },
             };
             const { data } = await axios.post(
-                `http://localhost:3000/api/chat`,
+                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/chat`,
                 { userId },
                 config
             );

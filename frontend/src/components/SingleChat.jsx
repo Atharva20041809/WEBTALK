@@ -7,7 +7,7 @@ import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import ScrollableChat from "./ScrollableChat";
 import io from "socket.io-client";
 
-const ENDPOINT = "http://localhost:3000";
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 let socket;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
@@ -34,7 +34,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             setLoading(true);
 
             const { data } = await axios.get(
-                `http://localhost:3000/api/message/${selectedChat.id}`,
+                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/message/${selectedChat.id}`,
                 config
             );
 
@@ -60,7 +60,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 };
 
                 const { data } = await axios.post(
-                    "http://localhost:3000/api/message",
+                    `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/message`,
                     {
                         content: newMessage,
                         chatId: selectedChat.id,
