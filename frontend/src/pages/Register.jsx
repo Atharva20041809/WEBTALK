@@ -18,7 +18,7 @@ function Register() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-
+      
       alert('Signup successful!');
       navigate('/home');
     } catch (err) {
