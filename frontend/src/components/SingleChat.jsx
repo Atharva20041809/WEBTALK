@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChatState } from "../Context/ChatProvider";
 import axios from "axios";
 import { getSender, getSenderFull } from "../config/ChatLogics";
@@ -8,7 +8,7 @@ import ScrollableChat from "./ScrollableChat";
 import io from "socket.io-client";
 
 const ENDPOINT = "http://localhost:3000";
-var socket, selectedChatCompare;
+let socket;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState([]);
@@ -17,6 +17,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [socketConnected, setSocketConnected] = useState(false);
     const [typing, setTyping] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const selectedChatCompare = useRef();
 
     const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
@@ -57,7 +58,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                         Authorization: `Bearer ${user.token}`,
                     },
                 };
-                setNewMessage("");
+
                 const { data } = await axios.post(
                     "http://localhost:3000/api/message",
                     {
@@ -66,42 +67,93 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     },
                     config
                 );
+
+                setNewMessage("");
+
+                // Emit to socket AFTER saving to database
                 socket.emit("new message", data);
-                setMessages([...messages, data]);
+
+                // Update local messages immediately
+                setMessages((prevMessages) => [...prevMessages, data]);
             } catch (error) {
                 alert("Failed to send the Message");
             }
         }
     };
 
+    // Initialize socket connection
     useEffect(() => {
-        socket = io(ENDPOINT);
+        socket = io(ENDPOINT, {
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+        });
+
         socket.emit("setup", user);
-        socket.on("connected", () => setSocketConnected(true));
+
+        socket.on("connected", () => {
+            setSocketConnected(true);
+            console.log("Socket connected successfully");
+        });
+
         socket.on("typing", () => setIsTyping(true));
         socket.on("stop typing", () => setIsTyping(false));
-    }, []);
 
+        socket.on("connect_error", (error) => {
+            console.error("Socket connection error:", error);
+        });
+
+        socket.on("disconnect", (reason) => {
+            console.log("Socket disconnected:", reason);
+            setSocketConnected(false);
+        });
+
+        socket.on("reconnect", (attemptNumber) => {
+            console.log("Socket reconnected after", attemptNumber, "attempts");
+            socket.emit("setup", user);
+        });
+
+        return () => {
+            socket.off("connected");
+            socket.off("typing");
+            socket.off("stop typing");
+            socket.off("message received");
+            socket.disconnect();
+        };
+    }, [user]);
+
+    // Fetch messages when chat changes
     useEffect(() => {
         fetchMessages();
-        selectedChatCompare = selectedChat;
+        selectedChatCompare.current = selectedChat;
     }, [selectedChat]);
 
+    // Handle incoming messages
     useEffect(() => {
-        socket.on("message received", (newMessageRecieved) => {
+        const handleMessageReceived = (newMessageReceived) => {
+            console.log("Message received:", newMessageReceived);
+
             if (
-                !selectedChatCompare ||
-                selectedChatCompare.id !== newMessageRecieved.chat.id
+                !selectedChatCompare.current ||
+                selectedChatCompare.current.id !== newMessageReceived.chat.id
             ) {
-                if (!notification.includes(newMessageRecieved)) {
-                    setNotification([newMessageRecieved, ...notification]);
+                // Message for different chat - add to notifications
+                if (!notification.find(n => n.id === newMessageReceived.id)) {
+                    setNotification([newMessageReceived, ...notification]);
                     setFetchAgain(!fetchAgain);
                 }
             } else {
-                setMessages([...messages, newMessageRecieved]);
+                // Message for current chat - add to messages
+                setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
             }
-        });
-    });
+        };
+
+        socket.on("message received", handleMessageReceived);
+
+        return () => {
+            socket.off("message received", handleMessageReceived);
+        };
+    }, [notification, fetchAgain]);
 
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
@@ -112,11 +164,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             setTyping(true);
             socket.emit("typing", selectedChat.id);
         }
+
         let lastTypingTime = new Date().getTime();
-        var timerLength = 3000;
+        const timerLength = 3000;
+
         setTimeout(() => {
-            var timeNow = new Date().getTime();
-            var timeDiff = timeNow - lastTypingTime;
+            const timeNow = new Date().getTime();
+            const timeDiff = timeNow - lastTypingTime;
             if (timeDiff >= timerLength && typing) {
                 socket.emit("stop typing", selectedChat.id);
                 setTyping(false);

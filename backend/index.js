@@ -33,42 +33,82 @@ const server = app.listen(PORT, () => console.log(`Server running on PORT ${PORT
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:5173", // Vite default port
-    // origin: "*", // Allow all for now if needed
+    origin: ["http://localhost:5173", "https://vercel.app"], // Allow both local and production
+    credentials: true,
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("Connected to socket.io");
+// Track online users
+const onlineUsers = new Map();
 
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io - Socket ID:", socket.id);
+
+  // Setup user connection
   socket.on("setup", (userData) => {
+    if (!userData || !userData.id) {
+      console.log("Invalid user data");
+      return;
+    }
+    
+    socket.userData = userData;
     socket.join(userData.id);
+    
+    // Mark user as online
+    onlineUsers.set(userData.id, socket.id);
+    socket.broadcast.emit("user online", userData.id);
+    
     socket.emit("connected");
+    console.log("User setup complete:", userData.id);
   });
 
+  // Join specific chat room
   socket.on("join chat", (room) => {
     socket.join(room);
-    console.log("User Joined Room: " + room);
+    console.log("User joined room:", room);
   });
 
-  socket.on("typing", (room) => socket.in(room).emit("typing"));
-  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+  // Typing indicators
+  socket.on("typing", (room) => {
+    socket.in(room).emit("typing");
+  });
+  
+  socket.on("stop typing", (room) => {
+    socket.in(room).emit("stop typing");
+  });
 
-  socket.on("new message", (newMessageRecieved) => {
-    var chat = newMessageRecieved.chat;
+  // Handle new messages
+  socket.on("new message", (newMessageReceived) => {
+    const chat = newMessageReceived.chat;
 
-    if (!chat.users) return console.log("chat.users not defined");
+    if (!chat || !chat.users) {
+      console.log("Invalid chat data");
+      return;
+    }
 
-    chat.users.forEach((user) => {
-      // Check if user is the sender (using user.userId from ChatUser relation)
-      if (user.userId == newMessageRecieved.senderId) return;
+    console.log("Broadcasting message to chat:", chat.id);
 
-      socket.in(user.userId).emit("message received", newMessageRecieved);
+    // Broadcast to all users in the chat except sender
+    chat.users.forEach((chatUser) => {
+      const userId = chatUser.userId || chatUser.user?.id;
+      
+      // Skip sender
+      if (userId === newMessageReceived.sender.id) return;
+
+      // Emit to user's room
+      io.to(userId).emit("message received", newMessageReceived);
+      console.log("Message sent to user:", userId);
     });
   });
 
-  socket.off("setup", () => {
-    console.log("USER DISCONNECTED");
-    socket.leave(userData.id);
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("User disconnected - Socket ID:", socket.id);
+    
+    if (socket.userData) {
+      onlineUsers.delete(socket.userData.id);
+      socket.broadcast.emit("user offline", socket.userData.id);
+      console.log("User marked offline:", socket.userData.id);
+    }
   });
 });
