@@ -55,6 +55,9 @@ const io = require("socket.io")(server, {
   },
 });
 
+// Make io available in controllers
+app.locals.io = io;
+
 // Track online users
 const onlineUsers = new Map();
 

@@ -174,12 +174,28 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             }
         };
 
+        const handleGroupNameUpdated = ({ chatId, chatName }) => {
+            // Update selectedChat if this is the current chat
+            if (selectedChat && selectedChat.id === chatId) {
+                setSelectedChat({ ...selectedChat, chatName: chatName });
+            }
+
+            // Update the chat in the chats array
+            setChats((prevChats) =>
+                prevChats.map((chat) =>
+                    chat.id === chatId ? { ...chat, chatName: chatName } : chat
+                )
+            );
+        };
+
         socket.on("removed from group", handleRemovedFromGroup);
         socket.on("user removed", handleUserRemoved);
+        socket.on("groupNameUpdated", handleGroupNameUpdated);
 
         return () => {
             socket.off("removed from group", handleRemovedFromGroup);
             socket.off("user removed", handleUserRemoved);
+            socket.off("groupNameUpdated", handleGroupNameUpdated);
         };
     }, [socketConnected, selectedChat, chats, fetchAgain]);
 

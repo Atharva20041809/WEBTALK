@@ -252,6 +252,15 @@ const renameGroup = async (req, res) => {
     res.status(404);
     throw new Error("Chat Not Found");
   } else {
+    // Emit socket event to notify all group members
+    const io = req.app.locals.io;
+    if (io) {
+      io.to(chatId).emit("groupNameUpdated", {
+        chatId: chatId,
+        chatName: chatName,
+      });
+    }
+    
     res.json(updatedChat);
   }
 };
