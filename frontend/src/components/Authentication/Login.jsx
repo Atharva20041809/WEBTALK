@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -34,42 +34,41 @@ const Login = () => {
             setLoading(false);
             navigate("/chats");
         } catch (error) {
-            alert("Error Occured: " + error.response.data.message);
+            alert("Error Occured: " + error.response?.data?.message || "Login Failed");
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex flex-col gap-4 w-full">
-            <div className="flex flex-col gap-2">
-                <label className="font-semibold text-gray-700">Email Address</label>
+        <div className="flex-column gap-2">
+            <div className="input-group">
+                <label>Email Address</label>
                 <input
                     type="email"
                     placeholder="Enter Your Email Address"
-                    className="input-field"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
             </div>
-            <div className="flex flex-col gap-2">
-                <label className="font-semibold text-gray-700">Password</label>
+            <div className="input-group">
+                <label>Password</label>
                 <input
                     type="password"
                     placeholder="Enter Password"
-                    className="input-field"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
             </div>
             <button
-                className="btn btn-primary w-full mt-4"
+                className="btn btn-primary w-100"
                 onClick={submitHandler}
                 disabled={loading}
             >
                 {loading ? "Loading..." : "Login"}
             </button>
             <button
-                className="btn w-full mt-2 bg-red-500 text-white hover:bg-red-600"
+                className="btn w-100"
+                style={{ marginTop: "10px", backgroundColor: "#E53E3E", color: "white" }}
                 onClick={() => {
                     setEmail("guest@example.com");
                     setPassword("123456");

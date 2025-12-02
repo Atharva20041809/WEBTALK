@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import axios from "axios";
 
@@ -135,73 +135,65 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages, childr
         <>
             <span onClick={() => setIsOpen(true)}>{children}</span>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md animate-fade-in flex flex-col">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-light text-gray-800">{selectedChat.chatName}</h2>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <i className="fas fa-times text-xl"></i>
-                            </button>
+                <div className="modal-overlay" onClick={() => setIsOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="d-flex justify-between align-center mb-2">
+                            <h2>{selectedChat.chatName}</h2>
+                            <button onClick={() => setIsOpen(false)} className="btn">X</button>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="d-flex gap-2 mb-2" style={{ flexWrap: "wrap" }}>
                             {selectedChat.users.map((u) => (
                                 <div
                                     key={u.user.id}
-                                    className="flex items-center gap-1 bg-purple-500 text-white px-2 py-1 rounded-full text-sm"
+                                    style={{ background: "#38B2AC", color: "white", padding: "5px 10px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "5px" }}
                                 >
                                     {u.user.username}
-                                    <i
-                                        className="fas fa-times cursor-pointer hover:text-red-200"
-                                        onClick={() => handleRemove(u.user)}
-                                    ></i>
+                                    <span style={{ cursor: "pointer" }} onClick={() => handleRemove(u.user)}>x</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="flex gap-2 mb-4">
+                        <div className="d-flex gap-2 mb-2">
                             <input
                                 placeholder="Chat Name"
-                                className="input-field mb-0"
                                 value={groupChatName}
                                 onChange={(e) => setGroupChatName(e.target.value)}
+                                style={{ width: "100%", padding: "8px" }}
                             />
                             <button
-                                className="btn btn-primary whitespace-nowrap"
+                                className="btn btn-primary"
                                 onClick={handleRename}
                                 disabled={renameloading}
                             >
-                                {renameloading ? "Updating..." : "Update"}
+                                Update
                             </button>
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex-column gap-2">
                             <input
                                 placeholder="Add User to group"
-                                className="input-field mb-1"
                                 onChange={(e) => handleSearch(e.target.value)}
+                                style={{ width: "100%", padding: "8px" }}
                             />
 
                             {loading ? (
-                                <div className="text-center py-2">Loading...</div>
+                                <div>Loading...</div>
                             ) : (
                                 searchResult?.slice(0, 4).map((user) => (
                                     <div
                                         key={user.id}
                                         onClick={() => handleAddUser(user)}
-                                        className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+                                        className="user-list-item"
                                     >
                                         <img
                                             src={user.pic}
                                             alt={user.username}
-                                            className="w-8 h-8 rounded-full object-cover"
+                                            className="avatar"
                                         />
                                         <div>
-                                            <p className="font-semibold text-sm text-gray-800">{user.username}</p>
-                                            <p className="text-xs text-gray-500">{user.email}</p>
+                                            <div>{user.username}</div>
+                                            <small>{user.email}</small>
                                         </div>
                                     </div>
                                 ))
@@ -210,7 +202,8 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages, childr
 
                         <button
                             onClick={() => handleRemove(user)}
-                            className="btn mt-6 w-full bg-red-500 text-white hover:bg-red-600"
+                            className="btn btn-danger w-100"
+                            style={{ marginTop: "20px" }}
                         >
                             Leave Group
                         </button>

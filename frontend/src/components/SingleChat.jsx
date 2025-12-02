@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatState } from "../Context/ChatProvider";
 import axios from "axios";
 import { getSender, getSenderFull } from "../config/ChatLogics";
 import ProfileModal from "./miscellaneous/ProfileModal";
-import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal"; // Need to create this
-import ScrollableChat from "./ScrollableChat"; // Need to create this
+import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
+import ScrollableChat from "./ScrollableChat";
 import io from "socket.io-client";
-import Lottie from "react-lottie";
-import animationData from "../animations/typing.json"; // Need to add this animation file
 
 const ENDPOINT = "http://localhost:3000";
 var socket, selectedChatCompare;
@@ -22,15 +20,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     const { user, selectedChat, setSelectedChat, notification, setNotification } =
         ChatState();
-
-    const defaultOptions = {
-        loop: true,
-        autoplay: true,
-        animationData: animationData,
-        rendererSettings: {
-            preserveAspectRatio: "xMidYMid slice",
-        },
-    };
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
@@ -102,7 +91,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     useEffect(() => {
         socket.on("message received", (newMessageRecieved) => {
             if (
-                !selectedChatCompare || // if chat is not selected or doesn't match current chat
+                !selectedChatCompare ||
                 selectedChatCompare.id !== newMessageRecieved.chat.id
             ) {
                 if (!notification.includes(newMessageRecieved)) {
@@ -140,60 +129,51 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <>
             {selectedChat ? (
                 <>
-                    <div className="text-xl md:text-2xl pb-3 px-2 w-full font-light flex justify-between items-center text-gray-800 border-b border-gray-200">
+                    <div className="header" style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
                         <button
-                            className="md:hidden flex items-center justify-center p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                            className="btn"
+                            style={{ display: "none" }} // Hidden on desktop, show on mobile via CSS media query if needed
                             onClick={() => setSelectedChat("")}
                         >
-                            <i className="fas fa-arrow-left"></i>
+                            Back
                         </button>
                         {!selectedChat.isGroupChat ? (
-                            <>
-                                {getSender(user, selectedChat.users)}
+                            <div className="d-flex justify-between w-100 align-center">
+                                <h3>{getSender(user, selectedChat.users)}</h3>
                                 <ProfileModal user={getSenderFull(user, selectedChat.users)}>
-                                    <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                                        <i className="fas fa-eye"></i>
-                                    </button>
+                                    <button className="btn"><i className="fas fa-eye"></i></button>
                                 </ProfileModal>
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                {selectedChat.chatName.toUpperCase()}
+                            <div className="d-flex justify-between w-100 align-center">
+                                <h3>{selectedChat.chatName.toUpperCase()}</h3>
                                 <UpdateGroupChatModal
                                     fetchAgain={fetchAgain}
                                     setFetchAgain={setFetchAgain}
                                     fetchMessages={fetchMessages}
                                 >
-                                    <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                                        <i className="fas fa-eye"></i>
-                                    </button>
+                                    <button className="btn"><i className="fas fa-eye"></i></button>
                                 </UpdateGroupChatModal>
-                            </>
+                            </div>
                         )}
                     </div>
-                    <div className="flex flex-col justify-end p-3 bg-gray-50 w-full h-full rounded-lg overflow-y-hidden mt-2 relative">
+                    <div className="d-flex flex-column justify-between h-100 p-2" style={{ background: "#E8E8E8", borderRadius: "8px", overflow: "hidden" }}>
                         {loading ? (
-                            <div className="self-center m-auto w-20 h-20 border-4 border-gray-300 border-t-teal-500 rounded-full animate-spin"></div>
+                            <div className="align-center justify-center d-flex h-100">Loading...</div>
                         ) : (
-                            <div className="flex flex-col overflow-y-scroll scrollbar-hide">
+                            <div className="messages" style={{ overflowY: "auto", flex: 1 }}>
                                 <ScrollableChat messages={messages} />
                             </div>
                         )}
 
-                        <div className="mt-3" onKeyDown={sendMessage}>
+                        <div onKeyDown={sendMessage} style={{ marginTop: "10px" }}>
                             {isTyping ? (
-                                <div className="mb-2 ml-2">
-                                    <Lottie
-                                        options={defaultOptions}
-                                        width={70}
-                                        style={{ marginBottom: 15, marginLeft: 0 }}
-                                    />
-                                </div>
+                                <div style={{ marginBottom: "5px", color: "gray" }}>Typing...</div>
                             ) : (
                                 <></>
                             )}
                             <input
-                                className="w-full bg-gray-200 text-gray-800 p-3 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
                                 placeholder="Enter a message.."
                                 onChange={typingHandler}
                                 value={newMessage}
@@ -202,10 +182,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     </div>
                 </>
             ) : (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-3xl pb-3 font-light text-gray-400">
-                        Click on a user to start chatting
-                    </p>
+                <div className="d-flex align-center justify-center h-100">
+                    <h2>Click on a user to start chatting</h2>
                 </div>
             )}
         </>

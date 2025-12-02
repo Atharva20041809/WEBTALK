@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatState } from "../Context/ChatProvider";
 import axios from "axios";
 import { getSender } from "../config/ChatLogics";
-import GroupChatModal from "./miscellaneous/GroupChatModal"; // Need to create this
+import GroupChatModal from "./miscellaneous/GroupChatModal";
 
 const MyChats = ({ fetchAgain }) => {
     const [loggedUser, setLoggedUser] = useState();
@@ -29,51 +29,42 @@ const MyChats = ({ fetchAgain }) => {
     }, [fetchAgain]);
 
     return (
-        <div
-            className={`${selectedChat ? "hidden md:flex" : "flex"
-                } flex-col items-center p-3 bg-white w-full md:w-[31%] rounded-lg border border-gray-200 h-full`}
-        >
-            <div className="pb-3 px-3 text-2xl md:text-xl lg:text-2xl font-light flex w-full justify-between items-center text-gray-800">
-                My Chats
+        <div className="sidebar">
+            <div className="d-flex justify-between align-center p-2 mb-2">
+                <h3>My Chats</h3>
                 <GroupChatModal>
-                    <button className="flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md transition-colors">
-                        <i className="fas fa-plus"></i>
-                        New Group Chat
+                    <button className="btn" style={{ fontSize: "12px", padding: "5px 10px" }}>
+                        New Group Chat +
                     </button>
                 </GroupChatModal>
             </div>
-            <div className="flex flex-col p-3 bg-gray-50 w-full h-full rounded-lg overflow-y-hidden">
+            <div className="d-flex flex-column gap-2" style={{ overflowY: "auto" }}>
                 {chats ? (
-                    <div className="overflow-y-scroll flex flex-col gap-2 h-full">
-                        {chats.map((chat) => (
-                            <div
-                                onClick={() => setSelectedChat(chat)}
-                                className={`cursor-pointer px-4 py-3 rounded-lg transition-all ${selectedChat === chat
-                                        ? "bg-teal-500 text-white shadow-md"
-                                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                                    }`}
-                                key={chat.id}
-                            >
-                                <p className="font-medium">
+                    chats.map((chat) => (
+                        <div
+                            onClick={() => setSelectedChat(chat)}
+                            className={`user-list-item ${selectedChat === chat ? "selected-chat" : ""}`}
+                            key={chat.id}
+                        >
+                            <div>
+                                <div style={{ fontWeight: "bold" }}>
                                     {!chat.isGroupChat
                                         ? getSender(loggedUser, chat.users)
                                         : chat.chatName}
-                                </p>
+                                </div>
                                 {chat.latestMessage && (
-                                    <p className="text-xs mt-1 opacity-80 truncate">
+                                    <div style={{ fontSize: "12px", opacity: 0.8 }}>
                                         <b>{chat.latestMessage.sender.username} : </b>
                                         {chat.latestMessage.content.length > 50
                                             ? chat.latestMessage.content.substring(0, 51) + "..."
                                             : chat.latestMessage.content}
-                                    </p>
+                                    </div>
                                 )}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ))
                 ) : (
-                    <div className="flex justify-center items-center h-full text-gray-500">
-                        Loading Chats...
-                    </div>
+                    <div>Loading Chats...</div>
                 )}
             </div>
         </div>

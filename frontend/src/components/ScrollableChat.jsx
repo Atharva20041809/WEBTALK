@@ -1,3 +1,4 @@
+import React from "react";
 import ScrollableFeed from "react-scrollable-feed";
 import {
     isLastMessage,
@@ -11,7 +12,7 @@ const ScrollableChat = ({ messages }) => {
     const { user } = ChatState();
 
     return (
-        <ScrollableFeed>
+        <ScrollableFeed className="d-flex flex-column" style={{ overflowY: "auto", height: "100%" }}>
             {messages &&
                 messages.map((m, i) => (
                     <div style={{ display: "flex" }} key={m.id}>
@@ -19,7 +20,14 @@ const ScrollableChat = ({ messages }) => {
                             isLastMessage(messages, i, user.id)) && (
                                 <div className="tooltip" data-tip={m.sender.username}>
                                     <img
-                                        className="mt-2 mr-1 w-8 h-8 rounded-full object-cover cursor-pointer"
+                                        style={{
+                                            marginTop: "7px",
+                                            marginRight: "5px",
+                                            width: "30px",
+                                            height: "30px",
+                                            borderRadius: "50%",
+                                            cursor: "pointer",
+                                        }}
                                         src={m.sender.pic}
                                         alt={m.sender.username}
                                     />

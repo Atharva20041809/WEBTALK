@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import { ChatState } from "../Context/ChatProvider";
-import { useState } from "react";
 import SideDrawer from "../components/miscellaneous/SideDrawer";
 import MyChats from "../components/MyChats";
 import ChatBox from "../components/ChatBox";
@@ -9,9 +9,9 @@ const ChatPage = () => {
     const [fetchAgain, setFetchAgain] = useState(false);
 
     return (
-        <div className="w-full h-screen flex flex-col">
+        <div style={{ width: "100%" }}>
             {user && <SideDrawer />}
-            <div className="flex justify-between w-full h-[91.5vh] p-2.5 gap-2.5">
+            <div className="chat-page">
                 {user && <MyChats fetchAgain={fetchAgain} />}
                 {user && (
                     <ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
