@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const userRoutes = require('./routes/userRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const { notFound, errorHandler } = require('./middleware/errorMiddleware'); // I need to create this
 
 const app = express();
 const prisma = new PrismaClient();
@@ -11,82 +13,62 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
-
 app.get("/", (req, res) => {
     res.send("WebTalk Backend is Running!");
 });
 
-app.post("/signup", async (req, res) => {
-  try {
-    const { username, email, password, pic } = req.body;
+app.use('/api/user', userRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/message', messageRoutes);
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: "All input fields are required" });
-    }
+// Error Handling middlewares
+app.use(notFound);
+app.use(errorHandler);
 
-    const existingEmail = await prisma.user.findUnique({ where: { email } });
-    if (existingEmail) {
-      return res.status(400).json({ error: "Email already exists" });
-    }
 
-    const existingUser = await prisma.user.findUnique({ where: { username } });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
+const PORT = process.env.PORT || 3000;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+const server = app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
 
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        pic:
-          pic ||
-          "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
-      },
+const io = require("socket.io")(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: "http://localhost:5173", // Vite default port
+    // origin: "*", // Allow all for now if needed
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io");
+
+  socket.on("setup", (userData) => {
+    socket.join(userData.id);
+    socket.emit("connected");
+  });
+
+  socket.on("join chat", (room) => {
+    socket.join(room);
+    console.log("User Joined Room: " + room);
+  });
+
+  socket.on("typing", (room) => socket.in(room).emit("typing"));
+  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+  socket.on("new message", (newMessageRecieved) => {
+    var chat = newMessageRecieved.chat;
+
+    if (!chat.users) return console.log("chat.users not defined");
+
+    chat.users.forEach((user) => {
+      // Check if user is the sender (using user.userId from ChatUser relation)
+      if (user.userId == newMessageRecieved.senderId) return;
+
+      socket.in(user.userId).emit("message received", newMessageRecieved);
     });
+  });
 
-    res.status(201).json({ message: "Signup Successful", userId: user.id });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
-  }
+  socket.off("setup", () => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData.id);
+  });
 });
-
-
-app.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: 'All input fields are required' });
-        }
-
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) {
-            return res.status(400).json({ error: 'email does not exist' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Incorrect Password' });
-        }
-
-        const token = jwt.sign(
-            { userId: user.id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
-
-        res.status(200).json({ message: 'Login Successful', token });
-
-    } catch (err) {
-        return res.status(500).json({ message: err.message });
-    }
-});
-
-
-
-
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
