@@ -15,24 +15,29 @@ const HomePage = () => {
 
     return (
         <div className="container">
-            <div className="card d-flex justify-center m-2">
-                <h1>WebTalk</h1>
+            <div className="card" style={{ textAlign: "center", marginBottom: "30px" }}>
+                <h1 style={{ margin: 0, fontSize: "36px", color: "#0084ff" }}>WebTalk</h1>
+                <p style={{ margin: "10px 0 0 0", color: "#65676b" }}>
+                    Connect with friends and colleagues
+                </p>
             </div>
-            <div className="card m-2">
-                <div className="d-flex gap-2" style={{ marginBottom: "20px" }}>
+
+            <div className="card">
+                <div className="tabs">
                     <button
-                        className={`btn w-100 ${activeTab === "login" ? "btn-primary" : ""}`}
+                        className={`tab ${activeTab === "login" ? "active" : ""}`}
                         onClick={() => setActiveTab("login")}
                     >
                         Login
                     </button>
                     <button
-                        className={`btn w-100 ${activeTab === "signup" ? "btn-primary" : ""}`}
+                        className={`tab ${activeTab === "signup" ? "active" : ""}`}
                         onClick={() => setActiveTab("signup")}
                     >
                         Sign Up
                     </button>
                 </div>
+
                 {activeTab === "login" ? <Login /> : <Signup />}
             </div>
         </div>

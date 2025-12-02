@@ -6,7 +6,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     const { selectedChat } = ChatState();
 
     return (
-        <div className={`chat-window ${selectedChat ? "d-flex" : "d-none d-md-flex"}`}>
+        <div className="chat-area">
             <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
         </div>
     );

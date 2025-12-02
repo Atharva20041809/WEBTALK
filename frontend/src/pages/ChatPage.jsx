@@ -11,11 +11,9 @@ const ChatPage = () => {
     return (
         <div style={{ width: "100%" }}>
             {user && <SideDrawer />}
-            <div className="chat-page">
+            <div className="chat-container">
                 {user && <MyChats fetchAgain={fetchAgain} />}
-                {user && (
-                    <ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
-                )}
+                {user && <ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />}
             </div>
         </div>
     );

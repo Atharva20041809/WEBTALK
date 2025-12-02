@@ -11,7 +11,7 @@ const Login = () => {
     const submitHandler = async () => {
         setLoading(true);
         if (!email || !password) {
-            alert("Please Fill all the Feilds");
+            alert("Please fill all the fields");
             setLoading(false);
             return;
         }
@@ -34,13 +34,13 @@ const Login = () => {
             setLoading(false);
             navigate("/chats");
         } catch (error) {
-            alert("Error Occured: " + error.response?.data?.message || "Login Failed");
+            alert("Error: " + (error.response?.data?.error || "Login Failed"));
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex-column gap-2">
+        <div>
             <div className="input-group">
                 <label>Email Address</label>
                 <input
@@ -60,21 +60,11 @@ const Login = () => {
                 />
             </div>
             <button
-                className="btn btn-primary w-100"
+                className="btn btn-primary btn-block"
                 onClick={submitHandler}
                 disabled={loading}
             >
                 {loading ? "Loading..." : "Login"}
-            </button>
-            <button
-                className="btn w-100"
-                style={{ marginTop: "10px", backgroundColor: "#E53E3E", color: "white" }}
-                onClick={() => {
-                    setEmail("guest@example.com");
-                    setPassword("123456");
-                }}
-            >
-                Get Guest User Credentials
             </button>
         </div>
     );

@@ -4,7 +4,7 @@ import axios from "axios";
 
 const GroupChatModal = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [groupChatName, setGroupChatName] = useState();
+    const [groupChatName, setGroupChatName] = useState("");
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [search, setSearch] = useState("");
     const [searchResult, setSearchResult] = useState([]);
@@ -15,6 +15,7 @@ const GroupChatModal = ({ children }) => {
     const handleSearch = async (query) => {
         setSearch(query);
         if (!query) {
+            setSearchResult([]);
             return;
         }
 
@@ -25,7 +26,10 @@ const GroupChatModal = ({ children }) => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.get(`http://localhost:3000/api/user?search=${query}`, config);
+            const { data } = await axios.get(
+                `http://localhost:3000/api/user?search=${query}`,
+                config
+            );
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -34,9 +38,21 @@ const GroupChatModal = ({ children }) => {
         }
     };
 
+    const handleGroup = (userToAdd) => {
+        if (selectedUsers.find((u) => u.id === userToAdd.id)) {
+            alert("User already added");
+            return;
+        }
+        setSelectedUsers([...selectedUsers, userToAdd]);
+    };
+
+    const handleDelete = (delUser) => {
+        setSelectedUsers(selectedUsers.filter((sel) => sel.id !== delUser.id));
+    };
+
     const handleSubmit = async () => {
-        if (!groupChatName || !selectedUsers) {
-            alert("Please fill all the feilds");
+        if (!groupChatName || selectedUsers.length === 0) {
+            alert("Please fill all the fields");
             return;
         }
 
@@ -56,23 +72,14 @@ const GroupChatModal = ({ children }) => {
             );
             setChats([data, ...chats]);
             setIsOpen(false);
+            setGroupChatName("");
+            setSelectedUsers([]);
+            setSearch("");
+            setSearchResult([]);
             alert("New Group Chat Created!");
         } catch (error) {
             alert("Failed to Create the Chat");
         }
-    };
-
-    const handleGroup = (userToAdd) => {
-        if (selectedUsers.includes(userToAdd)) {
-            alert("User already added");
-            return;
-        }
-
-        setSelectedUsers([...selectedUsers, userToAdd]);
-    };
-
-    const handleDelete = (delUser) => {
-        setSelectedUsers(selectedUsers.filter((sel) => sel.id !== delUser.id));
     };
 
     return (
@@ -80,46 +87,59 @@ const GroupChatModal = ({ children }) => {
             <span onClick={() => setIsOpen(true)}>{children}</span>
             {isOpen && (
                 <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="d-flex justify-between align-center mb-2">
-                            <h2>Create Group Chat</h2>
-                            <button onClick={() => setIsOpen(false)} className="btn">X</button>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Create Group Chat</h2>
+                            <button className="close-btn" onClick={() => setIsOpen(false)}>
+                                &times;
+                            </button>
                         </div>
 
-                        <div className="flex-column gap-2">
+                        <div className="input-group">
+                            <label>Chat Name</label>
                             <input
-                                placeholder="Chat Name"
-                                className="input-group"
+                                type="text"
+                                placeholder="Enter Group Name"
+                                value={groupChatName}
                                 onChange={(e) => setGroupChatName(e.target.value)}
-                                style={{ width: "100%", padding: "10px" }}
                             />
-                            <input
-                                placeholder="Add Users eg: John, Piyush, Jane"
-                                className="input-group"
-                                onChange={(e) => handleSearch(e.target.value)}
-                                style={{ width: "100%", padding: "10px" }}
-                            />
+                        </div>
 
-                            <div className="d-flex gap-2" style={{ flexWrap: "wrap" }}>
+                        <div className="input-group">
+                            <label>Add Users</label>
+                            <input
+                                type="text"
+                                placeholder="Search users"
+                                value={search}
+                                onChange={(e) => handleSearch(e.target.value)}
+                            />
+                        </div>
+
+                        {selectedUsers.length > 0 && (
+                            <div className="selected-users">
                                 {selectedUsers.map((u) => (
-                                    <div
-                                        key={u.id}
-                                        style={{ background: "#38B2AC", color: "white", padding: "5px 10px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "5px" }}
-                                    >
+                                    <div key={u.id} className="user-badge">
                                         {u.username}
-                                        <span style={{ cursor: "pointer" }} onClick={() => handleDelete(u)}>x</span>
+                                        <span
+                                            className="user-badge-remove"
+                                            onClick={() => handleDelete(u)}
+                                        >
+                                            &times;
+                                        </span>
                                     </div>
                                 ))}
                             </div>
+                        )}
 
+                        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
                             {loading ? (
-                                <div>Loading...</div>
+                                <div style={{ textAlign: "center", padding: "10px" }}>Loading...</div>
                             ) : (
                                 searchResult?.slice(0, 4).map((user) => (
                                     <div
                                         key={user.id}
-                                        onClick={() => handleGroup(user)}
                                         className="user-list-item"
+                                        onClick={() => handleGroup(user)}
                                     >
                                         <img
                                             src={user.pic}
@@ -127,8 +147,10 @@ const GroupChatModal = ({ children }) => {
                                             className="avatar"
                                         />
                                         <div>
-                                            <div>{user.username}</div>
-                                            <small>{user.email}</small>
+                                            <div style={{ fontWeight: "500" }}>{user.username}</div>
+                                            <div style={{ fontSize: "12px", color: "#65676b" }}>
+                                                {user.email}
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -136,8 +158,8 @@ const GroupChatModal = ({ children }) => {
                         </div>
 
                         <button
+                            className="btn btn-primary btn-block"
                             onClick={handleSubmit}
-                            className="btn btn-primary w-100"
                             style={{ marginTop: "20px" }}
                         >
                             Create Chat

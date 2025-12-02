@@ -30,41 +30,45 @@ const MyChats = ({ fetchAgain }) => {
 
     return (
         <div className="sidebar">
-            <div className="d-flex justify-between align-center p-2 mb-2">
-                <h3>My Chats</h3>
+            <div className="sidebar-header">
+                <h2 className="sidebar-title">My Chats</h2>
                 <GroupChatModal>
-                    <button className="btn" style={{ fontSize: "12px", padding: "5px 10px" }}>
-                        New Group Chat +
+                    <button className="btn btn-secondary" style={{ fontSize: "12px", padding: "6px 12px" }}>
+                        New Group +
                     </button>
                 </GroupChatModal>
             </div>
-            <div className="d-flex flex-column gap-2" style={{ overflowY: "auto" }}>
+            <div className="chat-list">
                 {chats ? (
                     chats.map((chat) => (
                         <div
                             onClick={() => setSelectedChat(chat)}
-                            className={`user-list-item ${selectedChat === chat ? "selected-chat" : ""}`}
+                            className={`chat-item ${selectedChat?.id === chat.id ? "selected" : ""}`}
                             key={chat.id}
                         >
-                            <div>
-                                <div style={{ fontWeight: "bold" }}>
-                                    {!chat.isGroupChat
-                                        ? getSender(loggedUser, chat.users)
-                                        : chat.chatName}
-                                </div>
-                                {chat.latestMessage && (
-                                    <div style={{ fontSize: "12px", opacity: 0.8 }}>
-                                        <b>{chat.latestMessage.sender.username} : </b>
-                                        {chat.latestMessage.content.length > 50
-                                            ? chat.latestMessage.content.substring(0, 51) + "..."
-                                            : chat.latestMessage.content}
+                            <div className="chat-item-info">
+                                <div className="chat-item-details">
+                                    <div className="chat-item-name">
+                                        {!chat.isGroupChat
+                                            ? getSender(loggedUser, chat.users)
+                                            : chat.chatName}
                                     </div>
-                                )}
+                                    {chat.messages && chat.messages.length > 0 && (
+                                        <div className="chat-item-message">
+                                            <strong>{chat.messages[0].sender.username}: </strong>
+                                            {chat.messages[0].content.length > 50
+                                                ? chat.messages[0].content.substring(0, 51) + "..."
+                                                : chat.messages[0].content}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div>Loading Chats...</div>
+                    <div style={{ padding: "20px", textAlign: "center", color: "#65676b" }}>
+                        Loading Chats...
+                    </div>
                 )}
             </div>
         </div>

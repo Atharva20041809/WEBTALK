@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 const Signup = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [confirmpassword, setConfirmpassword] = useState("");
     const [password, setPassword] = useState("");
-    const [pic, setPic] = useState();
+    const [confirmpassword, setConfirmpassword] = useState("");
+    const [pic, setPic] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ const Signup = () => {
     const submitHandler = async () => {
         setLoading(true);
         if (!name || !email || !password || !confirmpassword) {
-            alert("Please Fill all the Feilds");
+            alert("Please fill all the fields");
             setLoading(false);
             return;
         }
@@ -76,13 +76,13 @@ const Signup = () => {
             setLoading(false);
             navigate("/chats");
         } catch (error) {
-            alert("Error Occured: " + error.response?.data?.message || "Signup Failed");
+            alert("Error: " + (error.response?.data?.error || "Signup Failed"));
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex-column gap-2">
+        <div>
             <div className="input-group">
                 <label>Name</label>
                 <input
@@ -116,7 +116,7 @@ const Signup = () => {
                 />
             </div>
             <div className="input-group">
-                <label>Upload your Picture</label>
+                <label>Upload your Picture (Optional)</label>
                 <input
                     type="file"
                     accept="image/*"
@@ -124,7 +124,7 @@ const Signup = () => {
                 />
             </div>
             <button
-                className="btn btn-primary w-100"
+                className="btn btn-primary btn-block"
                 onClick={submitHandler}
                 disabled={loading}
             >

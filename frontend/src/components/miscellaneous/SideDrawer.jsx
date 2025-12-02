@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import axios from "axios";
-import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
+import ProfileModal from "./ProfileModal";
 
 const SideDrawer = () => {
     const [search, setSearch] = useState("");
@@ -11,14 +11,7 @@ const SideDrawer = () => {
     const [loadingChat, setLoadingChat] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    const {
-        user,
-        setSelectedChat,
-        chats,
-        setChats,
-        notification,
-        setNotification,
-    } = ChatState();
+    const { user, setSelectedChat, chats, setChats } = ChatState();
     const navigate = useNavigate();
 
     const logoutHandler = () => {
@@ -34,19 +27,21 @@ const SideDrawer = () => {
 
         try {
             setLoading(true);
-
             const config = {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
 
-            const { data } = await axios.get(`http://localhost:3000/api/user?search=${search}`, config);
+            const { data } = await axios.get(
+                `http://localhost:3000/api/user?search=${search}`,
+                config
+            );
 
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
-            alert("Error Occured: " + error.message);
+            alert("Error: " + error.message);
             setLoading(false);
         }
     };
@@ -60,14 +55,18 @@ const SideDrawer = () => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.post(`http://localhost:3000/api/chat`, { userId }, config);
+            const { data } = await axios.post(
+                `http://localhost:3000/api/chat`,
+                { userId },
+                config
+            );
 
             if (!chats.find((c) => c.id === data.id)) setChats([data, ...chats]);
             setSelectedChat(data);
             setLoadingChat(false);
             setIsSearchOpen(false);
         } catch (error) {
-            alert("Error fetching the chat: " + error.message);
+            alert("Error fetching the chat");
             setLoadingChat(false);
         }
     };
@@ -75,46 +74,55 @@ const SideDrawer = () => {
     return (
         <>
             <div className="header">
-                <button className="btn" onClick={() => setIsSearchOpen(true)}>
-                    <i className="fas fa-search"></i> Search User
+                <button className="btn btn-secondary" onClick={() => setIsSearchOpen(true)}>
+                    Search User
                 </button>
-
-                <h2>WebTalk</h2>
-
-                <div className="d-flex align-center gap-2">
-                    <div className="notification-icon">
-                        <i className="fas fa-bell"></i>
-                        {notification.length > 0 && <span>{notification.length}</span>}
-                    </div>
+                <h1 className="header-title">WebTalk</h1>
+                <div className="header-actions">
                     <ProfileModal user={user}>
-                        <img src={user.pic} alt={user.username} className="avatar" style={{ cursor: "pointer" }} />
+                        <button className="btn btn-secondary">Profile</button>
                     </ProfileModal>
-                    <button className="btn" onClick={logoutHandler}>Logout</button>
+                    <button className="btn btn-danger" onClick={logoutHandler}>
+                        Logout
+                    </button>
                 </div>
             </div>
 
             {isSearchOpen && (
                 <div className="modal-overlay" onClick={() => setIsSearchOpen(false)}>
-                    <div className="modal-content" style={{ height: "100%", width: "300px", position: "absolute", left: 0, top: 0, borderRadius: 0 }} onClick={(e) => e.stopPropagation()}>
-                        <h3>Search Users</h3>
-                        <div className="d-flex gap-2 mb-2">
-                            <input
-                                placeholder="Search by name or email"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                style={{ width: "100%", padding: "8px" }}
-                            />
-                            <button onClick={handleSearch} className="btn btn-primary">Go</button>
+                    <div
+                        className="search-drawer"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="search-drawer-header">
+                            <h3>Search Users</h3>
+                            <button className="close-btn" onClick={() => setIsSearchOpen(false)}>
+                                &times;
+                            </button>
                         </div>
-                        <div style={{ overflowY: "auto", height: "calc(100% - 100px)" }}>
+                        <div className="search-input-container">
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <input
+                                    type="text"
+                                    placeholder="Search by name or email"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}
+                                />
+                                <button className="btn btn-primary" onClick={handleSearch}>
+                                    Go
+                                </button>
+                            </div>
+                        </div>
+                        <div className="search-results">
                             {loading ? (
-                                <div>Loading...</div>
+                                <div style={{ textAlign: "center", padding: "20px" }}>Loading...</div>
                             ) : (
                                 searchResult?.map((user) => (
                                     <div
                                         key={user.id}
-                                        onClick={() => accessChat(user.id)}
                                         className="user-list-item"
+                                        onClick={() => accessChat(user.id)}
                                     >
                                         <img
                                             src={user.pic}
@@ -122,13 +130,17 @@ const SideDrawer = () => {
                                             className="avatar"
                                         />
                                         <div>
-                                            <div>{user.username}</div>
-                                            <small><b>Email : </b>{user.email}</small>
+                                            <div style={{ fontWeight: "500" }}>{user.username}</div>
+                                            <div style={{ fontSize: "12px", color: "#65676b" }}>
+                                                {user.email}
+                                            </div>
                                         </div>
                                     </div>
                                 ))
                             )}
-                            {loadingChat && <div>Loading chat...</div>}
+                            {loadingChat && (
+                                <div style={{ textAlign: "center", padding: "10px" }}>Loading chat...</div>
+                            )}
                         </div>
                     </div>
                 </div>

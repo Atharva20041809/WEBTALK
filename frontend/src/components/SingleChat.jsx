@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChatState } from "../Context/ChatProvider";
 import axios from "axios";
 import { getSender, getSenderFull } from "../config/ChatLogics";
@@ -18,8 +18,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [typing, setTyping] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
 
-    const { user, selectedChat, setSelectedChat, notification, setNotification } =
-        ChatState();
+    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
@@ -44,6 +43,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             socket.emit("join chat", selectedChat.id);
         } catch (error) {
             alert("Failed to Load the Messages");
+            setLoading(false);
         }
     };
 
@@ -84,7 +84,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     useEffect(() => {
         fetchMessages();
-
         selectedChatCompare = selectedChat;
     }, [selectedChat]);
 
@@ -129,61 +128,56 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <>
             {selectedChat ? (
                 <>
-                    <div className="header" style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
-                        <button
-                            className="btn"
-                            style={{ display: "none" }} // Hidden on desktop, show on mobile via CSS media query if needed
-                            onClick={() => setSelectedChat("")}
-                        >
-                            Back
-                        </button>
-                        {!selectedChat.isGroupChat ? (
-                            <div className="d-flex justify-between w-100 align-center">
-                                <h3>{getSender(user, selectedChat.users)}</h3>
+                    <div className="chat-header">
+                        <div className="chat-name">
+                            {!selectedChat.isGroupChat ? (
+                                getSender(user, selectedChat.users)
+                            ) : (
+                                selectedChat.chatName.toUpperCase()
+                            )}
+                        </div>
+                        <div>
+                            {!selectedChat.isGroupChat ? (
                                 <ProfileModal user={getSenderFull(user, selectedChat.users)}>
-                                    <button className="btn"><i className="fas fa-eye"></i></button>
+                                    <button className="btn btn-secondary">View Profile</button>
                                 </ProfileModal>
-                            </div>
-                        ) : (
-                            <div className="d-flex justify-between w-100 align-center">
-                                <h3>{selectedChat.chatName.toUpperCase()}</h3>
+                            ) : (
                                 <UpdateGroupChatModal
+                                    fetchMessages={fetchMessages}
                                     fetchAgain={fetchAgain}
                                     setFetchAgain={setFetchAgain}
-                                    fetchMessages={fetchMessages}
                                 >
-                                    <button className="btn"><i className="fas fa-eye"></i></button>
+                                    <button className="btn btn-secondary">Update Group</button>
                                 </UpdateGroupChatModal>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="messages-container">
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: "50px", color: "#65676b" }}>
+                                Loading Messages...
                             </div>
+                        ) : (
+                            <ScrollableChat messages={messages} />
                         )}
                     </div>
-                    <div className="d-flex flex-column justify-between h-100 p-2" style={{ background: "#E8E8E8", borderRadius: "8px", overflow: "hidden" }}>
-                        {loading ? (
-                            <div className="align-center justify-center d-flex h-100">Loading...</div>
-                        ) : (
-                            <div className="messages" style={{ overflowY: "auto", flex: 1 }}>
-                                <ScrollableChat messages={messages} />
-                            </div>
-                        )}
 
-                        <div onKeyDown={sendMessage} style={{ marginTop: "10px" }}>
-                            {isTyping ? (
-                                <div style={{ marginBottom: "5px", color: "gray" }}>Typing...</div>
-                            ) : (
-                                <></>
-                            )}
-                            <input
-                                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-                                placeholder="Enter a message.."
-                                onChange={typingHandler}
-                                value={newMessage}
-                            />
-                        </div>
+                    {isTyping && <div className="typing-indicator">Typing...</div>}
+
+                    <div className="message-input-container">
+                        <input
+                            className="message-input"
+                            placeholder="Type a message..."
+                            value={newMessage}
+                            onChange={typingHandler}
+                            onKeyDown={sendMessage}
+                        />
                     </div>
                 </>
             ) : (
-                <div className="d-flex align-center justify-center h-100">
-                    <h2>Click on a user to start chatting</h2>
+                <div className="empty-state">
+                    <h3>Click on a user to start chatting</h3>
                 </div>
             )}
         </>
