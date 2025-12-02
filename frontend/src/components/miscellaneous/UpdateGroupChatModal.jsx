@@ -23,7 +23,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, childr
                 },
             };
             const { data } = await axios.put(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/chat/rename`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/chat/rename`,
                 {
                     chatId: selectedChat.id,
                     chatName: groupChatName,
@@ -56,7 +56,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, childr
                 },
             };
             const { data } = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/user?search=${query}`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/user?search=${query}`,
                 config
             );
             setLoading(false);
@@ -86,7 +86,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, childr
                 },
             };
             const { data } = await axios.put(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/chat/groupadd`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/chat/groupadd`,
                 {
                     chatId: selectedChat.id,
                     userId: user1.id,
@@ -117,7 +117,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain, childr
                 },
             };
             const { data } = await axios.put(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/chat/groupremove`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/chat/groupremove`,
                 {
                     chatId: selectedChat.id,
                     userId: user1.id,

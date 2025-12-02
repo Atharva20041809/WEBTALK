@@ -34,7 +34,7 @@ const SideDrawer = () => {
             };
 
             const { data } = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/user?search=${search}`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/user?search=${search}`,
                 config
             );
 
@@ -56,7 +56,7 @@ const SideDrawer = () => {
                 },
             };
             const { data } = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/chat`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/chat`,
                 { userId },
                 config
             );

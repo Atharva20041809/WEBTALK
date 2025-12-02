@@ -62,7 +62,7 @@ const Signup = () => {
                 },
             };
             const { data } = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/api/user/signup`,
+                `${import.meta.env.VITE_BACKEND_URL || "https://webtalk-8ank.onrender.com"}/api/user/signup`,
                 {
                     username: name,
                     email,
